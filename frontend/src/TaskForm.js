@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { TextField, Button, Grid, Container, Typography, Box } from '@mui/material';
+import { TextField, Button, Grid, Container, Typography, Box, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
 
 const TaskForm = ({ onTaskAdd }) => {
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
+    const [importance, setImportance] = useState('Low'); // 重要度の初期値を設定
 
     const handleTitleChange = (event) => {
         setTitle(event.target.value);
@@ -23,6 +24,10 @@ const TaskForm = ({ onTaskAdd }) => {
         setEndDate(event.target.value);
     };
 
+    const handleImportanceChange = (event) => {
+        setImportance(event.target.value);
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
 
@@ -32,6 +37,7 @@ const TaskForm = ({ onTaskAdd }) => {
             description: description,
             start_date: startDate,
             end_date: endDate,
+            importance: importance, // 重要度の値を追加
         };
 
         onTaskAdd(newTask);
@@ -41,6 +47,7 @@ const TaskForm = ({ onTaskAdd }) => {
         setDescription('');
         setStartDate('');
         setEndDate('');
+        setImportance('Low'); // 重要度を初期値にリセット
     };
 
     return (
@@ -52,26 +59,10 @@ const TaskForm = ({ onTaskAdd }) => {
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={2}>
                         <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="タイトル"
-                                value={title}
-                                onChange={handleTitleChange}
-                                variant="outlined"
-                                required
-                            />
+                            <TextField fullWidth label="タイトル" value={title} onChange={handleTitleChange} variant="outlined" required />
                         </Grid>
                         <Grid item xs={12}>
-                            <TextField
-                                fullWidth
-                                label="説明"
-                                value={description}
-                                onChange={handleDescriptionChange}
-                                multiline
-                                rows={4}
-                                variant="outlined"
-                                required
-                            />
+                            <TextField fullWidth label="説明" value={description} onChange={handleDescriptionChange} multiline rows={4} variant="outlined" required />
                         </Grid>
                         <Grid item xs={6}>
                             <TextField
@@ -83,7 +74,7 @@ const TaskForm = ({ onTaskAdd }) => {
                                 variant="outlined"
                                 required
                                 InputLabelProps={{
-                                    shrink: true, // フォーカス時にラベルを縮小しない
+                                    shrink: true,
                                 }}
                                 InputProps={{
                                     inputProps: {
@@ -103,7 +94,7 @@ const TaskForm = ({ onTaskAdd }) => {
                                 variant="outlined"
                                 required
                                 InputLabelProps={{
-                                    shrink: true, // フォーカス時にラベルを縮小しない
+                                    shrink: true,
                                 }}
                                 InputProps={{
                                     inputProps: {
@@ -112,6 +103,16 @@ const TaskForm = ({ onTaskAdd }) => {
                                     },
                                 }}
                             />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <FormControl fullWidth required>
+                                <InputLabel>重要度</InputLabel>
+                                <Select name="importance" value={importance} onChange={handleImportanceChange}>
+                                    <MenuItem value="Low">Low</MenuItem>
+                                    <MenuItem value="Medium">Medium</MenuItem>
+                                    <MenuItem value="High">High</MenuItem>
+                                </Select>
+                            </FormControl>
                         </Grid>
                         <Grid item xs={12}>
                             <Button type="submit" variant="contained" color="primary">
