@@ -1,9 +1,11 @@
+// TaskList.js
+
 import React from 'react';
-import { List, ListItem, ListItemText, Typography, Chip, Box } from '@mui/material';
+import { List, ListItem, ListItemText, Typography, Chip, Box, IconButton } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
-const TaskList = ({ tasks }) => {
+const TaskList = ({ tasks, onDeleteTask }) => {
     return (
-
         <Box mt={4} p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
             <Typography variant="h5" gutterBottom>
                 タスクリスト
@@ -27,6 +29,9 @@ const TaskList = ({ tasks }) => {
                                 </>
                             }
                         />
+                        <IconButton onClick={() => onDeleteTask(task.id)} aria-label="delete">
+                            <DeleteIcon />
+                        </IconButton>
                     </ListItem>
                 ))}
             </List>

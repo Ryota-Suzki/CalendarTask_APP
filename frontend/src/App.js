@@ -1,26 +1,23 @@
-// frontend/src/App.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import MyCalendar from './Calendar';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
-import { Container, Typography, Box, Grid } from '@mui/material';
+import { Container, Typography, Box, Grid, CircularProgress } from '@mui/material';
 
 const App = () => {
   const [events, setEvents] = useState([]);
-  console.log(events)
-  const [tasks, setTasks] = useState([]); // タスクリストを保持するstate
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(false); // ローディング状態を管理するステート
 
   useEffect(() => {
-    fetchEvents(); // コンポーネントのマウント時にイベントを取得
-    fetchTasks(); // コンポーネントのマウント時にタスクリストを取得
+    fetchEvents();
+    fetchTasks();
   }, []);
-
 
   const fetchEvents = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/tasks/'); // URLを正しく指定
+      const response = await axios.get('http://localhost:8000/api/tasks/');
       setEvents(response.data);
     } catch (error) {
       console.error('Error fetching events:', error);
@@ -29,35 +26,51 @@ const App = () => {
 
   const fetchTasks = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/tasks/'); // DjangoのREST APIからタスクリストを取得
-      setTasks(response.data); // タスクリストをstateにセット
+      setLoading(true); // タスクリスト取得開始時にローディング状態をtrueにする
+      const response = await axios.get('http://localhost:8000/api/tasks/');
+      setTasks(response.data);
+      setLoading(false); // タスクリスト取得完了時にローディング状態をfalseにする
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      setLoading(false); // エラー時にもローディング状態をfalseにする
     }
   };
 
   const handleEventSelect = (event) => {
-    // イベントの詳細を表示する処理
     alert(`Event selected: ${event.title}`);
   };
 
   const handleDateSelect = (slotInfo) => {
-    // 新しいタスクを追加する処理
     const newTask = {
       title: '',
       description: '',
       start_date: slotInfo.start,
       end_date: slotInfo.end,
     };
-    setTasks([...tasks, newTask]); // 新しいタスクを追加してタスクリストを更新
+    setTasks([...tasks, newTask]);
   };
 
   const handleTaskAdd = async (task) => {
     try {
-      await axios.post('http://localhost:8000/api/tasks/', task); // タスクを追加
-      fetchTasks(); // タスクリストを更新
+      setLoading(true); // タスク追加処理開始時にローディング状態をtrueにする
+      await axios.post('http://localhost:8000/api/tasks/', task);
+      fetchTasks();
     } catch (error) {
       console.error('Error adding task:', error);
+    } finally {
+      setLoading(false); // タスク追加処理完了時にローディング状態をfalseにする
+    }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      setLoading(true); // タスク削除処理開始時にローディング状態をtrueにする
+      await axios.delete(`http://localhost:8000/api/tasks/${taskId}/`);
+      fetchTasks();
+    } catch (error) {
+      console.error('Error deleting task:', error);
+    } finally {
+      setLoading(false); // タスク削除処理完了時にローディング状態をfalseにする
     }
   };
 
@@ -80,7 +93,11 @@ const App = () => {
           </Grid>
           <Grid item xs={12} lg={6}>
             <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
-              <TaskList tasks={tasks} />
+              {loading ? ( // ローディング状態に応じて表示するコンポーネントを切り替える
+                <CircularProgress /> // ローディング中は円形のプログレスバーを表示
+              ) : (
+                <TaskList tasks={tasks} onDeleteTask={handleDeleteTask} />
+              )}
             </Box>
           </Grid>
         </Grid>
