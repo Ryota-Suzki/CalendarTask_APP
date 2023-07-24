@@ -3,17 +3,27 @@ import axios from 'axios';
 import MyCalendar from './Calendar';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
-import { Container, Typography, Box, Grid, CircularProgress } from '@mui/material';
+import TaskDetails from './TaskDetails';
+import { Container, Typography, Box, Grid, CircularProgress, createTheme } from '@mui/material';
+import { ThemeProvider } from '@mui/material/styles';
 
 const App = () => {
   const [events, setEvents] = useState([]);
   const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(false); // ローディング状態を管理するステート
+  const [loading, setLoading] = useState(false);
+  const [taskDetailsOpen, setTaskDetailsOpen] = useState(false);
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     fetchEvents();
     fetchTasks();
   }, []);
+
+  const theme = createTheme({
+    palette: {
+      type: 'dark',
+    },
+  });
 
   const fetchEvents = async () => {
     try {
@@ -26,13 +36,13 @@ const App = () => {
 
   const fetchTasks = async () => {
     try {
-      setLoading(true); // タスクリスト取得開始時にローディング状態をtrueにする
+      setLoading(true);
       const response = await axios.get('http://localhost:8000/api/tasks/');
       setTasks(response.data);
-      setLoading(false); // タスクリスト取得完了時にローディング状態をfalseにする
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      setLoading(false); // エラー時にもローディング状態をfalseにする
+      setLoading(false);
     }
   };
 
@@ -52,31 +62,32 @@ const App = () => {
 
   const handleTaskAdd = async (task) => {
     try {
-      setLoading(true); // タスク追加処理開始時にローディング状態をtrueにする
+      setLoading(true);
       await axios.post('http://localhost:8000/api/tasks/', task);
-      fetchTasks();
+      await fetchTasks();
+      setEvents([...events, task]); // events ステートを更新
     } catch (error) {
       console.error('Error adding task:', error);
     } finally {
-      setLoading(false); // タスク追加処理完了時にローディング状態をfalseにする
+      setLoading(false);
     }
   };
 
   const handleDeleteTask = async (taskId) => {
     try {
-      setLoading(true); // タスク削除処理開始時にローディング状態をtrueにする
+      setLoading(true);
       await axios.delete(`http://localhost:8000/api/tasks/${taskId}/`);
       fetchTasks();
     } catch (error) {
       console.error('Error deleting task:', error);
     } finally {
-      setLoading(false); // タスク削除処理完了時にローディング状態をfalseにする
+      setLoading(false);
     }
   };
 
   const handleToggleComplete = async (taskId) => {
     try {
-      setLoading(true); // タスク完了状態の変更処理開始時にローディング状態をtrueにする
+      setLoading(true);
       const taskToToggle = tasks.find((task) => task.id === taskId);
       const updatedTask = { ...taskToToggle, completed: taskToToggle.completed === 'Completed' ? 'Incomplete' : 'Completed' };
       await axios.put(`http://localhost:8000/api/tasks/${taskId}/`, updatedTask);
@@ -84,39 +95,79 @@ const App = () => {
     } catch (error) {
       console.error('Error toggling task completion:', error);
     } finally {
-      setLoading(false); // タスク完了状態の変更処理完了時にローディング状態をfalseにする
+      setLoading(false);
+    }
+  };
+
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+    setTaskDetailsOpen(true);
+  };
+
+  const handleTaskSave = async (editedTask) => {
+    try {
+      setLoading(true);
+      await axios.put(`http://localhost:8000/api/tasks/${editedTask.id}/`, editedTask);
+      await fetchTasks();
+      setEvents(events.filter((task) => task.id !== editedTask.id).concat(editedTask));
+    } catch (error) {
+      console.error('Error saving task:', error);
+    } finally {
+      setLoading(false);
+      setTaskDetailsOpen(false);
     }
   };
 
   return (
-    <Container maxWidth="lg">
-      <Box my={4}>
-        <Typography variant="h3" align="center" gutterBottom>
-          Calendar and Task Management App
-        </Typography>
-        <Grid container spacing={3}>
-          <Grid item xs={12}>
-            <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
-              <MyCalendar events={events} onEventSelect={handleEventSelect} onDateSelect={handleDateSelect} />
-            </Box>
+    <ThemeProvider theme={theme}>
+      <Container maxWidth="lg">
+        <Box my={4}>
+          <Typography variant="h3" align="center" gutterBottom>
+            Calendar and Task Management App
+          </Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12}>
+              <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
+                <MyCalendar
+                  key={JSON.stringify(events)} // eventsが変更されたときにカレンダーを再描画する
+                  events={events}
+                  onEventSelect={handleEventSelect}
+                  onDateSelect={handleDateSelect}
+                />
+              </Box>
+            </Grid>
+            <Grid item xs={12} lg={6}>
+              <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
+                <TaskForm onTaskAdd={handleTaskAdd} />
+              </Box>
+            </Grid>
+            <Grid item xs={12} lg={6}>
+              <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
+                {loading ? (
+                  <CircularProgress />
+                ) : (
+                  <TaskList tasks={tasks}
+                    setTasks={setTasks}
+                    onDeleteTask={handleDeleteTask}
+                    onToggleComplete={handleToggleComplete}
+                    onTaskClick={handleTaskClick}
+                    setLoading={setLoading}
+                    setEvents={setEvents} />
+                )}
+                {taskDetailsOpen && selectedTask && (
+                  <TaskDetails
+                    task={selectedTask}
+                    onSave={handleTaskSave}
+                    onClose={() => setTaskDetailsOpen(false)}
+                    setLoading={setLoading}
+                  />
+                )}
+              </Box>
+            </Grid>
           </Grid>
-          <Grid item xs={12} lg={6}>
-            <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
-              <TaskForm onTaskAdd={handleTaskAdd} />
-            </Box>
-          </Grid>
-          <Grid item xs={12} lg={6}>
-            <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
-              {loading ? (
-                <CircularProgress />
-              ) : (
-                <TaskList tasks={tasks} onDeleteTask={handleDeleteTask} onToggleComplete={handleToggleComplete} />
-              )}
-            </Box>
-          </Grid>
-        </Grid>
-      </Box>
-    </Container>
+        </Box>
+      </Container>
+    </ThemeProvider>
   );
 };
 
