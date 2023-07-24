@@ -4,7 +4,7 @@ import MyCalendar from './Calendar';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
 import TaskDetails from './TaskDetails';
-import { Container, Typography, Box, Grid, CircularProgress, createTheme } from '@mui/material';
+import { Container, Typography, Box, Grid, CircularProgress, createTheme, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 
 const App = () => {
@@ -47,7 +47,8 @@ const App = () => {
   };
 
   const handleEventSelect = (event) => {
-    alert(`Event selected: ${event.title}`);
+    setSelectedTask(event); // 選択されたイベント（タスク）をセット
+    setTaskDetailsOpen(true); // 編集画面を表示
   };
 
   const handleDateSelect = (slotInfo) => {
@@ -156,12 +157,16 @@ const App = () => {
                     fetchTasks={fetchTasks} />
                 )}
                 {taskDetailsOpen && selectedTask && (
-                  <TaskDetails
-                    task={selectedTask}
-                    onSave={handleTaskSave}
-                    onClose={() => setTaskDetailsOpen(false)}
-                    setLoading={setLoading}
-                  />
+                  <Dialog open={taskDetailsOpen} onClose={() => setTaskDetailsOpen(false)}>
+                    <DialogContent>
+                      <TaskDetails
+                        task={selectedTask}
+                        onSave={handleTaskSave}
+                        onClose={() => setTaskDetailsOpen(false)}
+                        setLoading={setLoading}
+                      />
+                    </DialogContent>
+                  </Dialog>
                 )}
               </Box>
             </Grid>
