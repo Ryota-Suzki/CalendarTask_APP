@@ -113,12 +113,14 @@ const TaskList = ({ tasks, setTasks, onDeleteTask, onToggleComplete, onTaskClick
                         </Box>
                     </CardContent>
                     <CardActions>
-                        <Button onClick={() => onDeleteTask(task.id)} color="secondary">
+                        <Button onClick={() => onDeleteTask(task.id)} color="secondary" sx={{ border: '1px solid lightgray' }}>
                             削除
                         </Button>
-                        <Button onClick={() => handleTaskDetail(task)} color="primary">
-                            編集
-                        </Button>
+                        {!isModalOpen && (
+                            <Button onClick={() => handleTaskDetail(task)} color="primary" sx={{ border: '1px solid lightgray' }}>
+                                編集
+                            </Button>
+                        )}
                     </CardActions>
                 </Card >
             ))
