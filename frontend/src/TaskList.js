@@ -1,7 +1,7 @@
 import React from 'react';
-import { List, ListItem, ListItemText, Typography, Chip, Box, Card, CardContent, CardActions, Button } from '@mui/material';
+import { Card, CardContent, CardActions, Button, Chip, Typography, Box } from '@mui/material';
 
-const TaskList = ({ tasks, onDeleteTask }) => {
+const TaskList = ({ tasks, onDeleteTask, onToggleComplete }) => {
     return (
         <Box mt={4}>
             <Typography variant="h5" gutterBottom>
@@ -15,6 +15,11 @@ const TaskList = ({ tasks, onDeleteTask }) => {
                             {task.importance === 'Low' && <Chip label="Low" color="primary" />}
                             {task.importance === 'Medium' && <Chip label="Medium" color="warning" />}
                             {task.importance === 'High' && <Chip label="High" color="error" />}
+                            {task.completed === 'Completed' ? (
+                                <Chip label="完了" color="primary" />
+                            ) : (
+                                <Chip label="未完了" color="default" />
+                            )}
                         </Box>
                         <Typography color="textSecondary">{task.description}</Typography>
                         <Box mt={2}>
@@ -30,6 +35,9 @@ const TaskList = ({ tasks, onDeleteTask }) => {
                     <CardActions>
                         <Button onClick={() => onDeleteTask(task.id)} color="secondary">
                             削除
+                        </Button>
+                        <Button onClick={() => onToggleComplete(task.id)} color="primary">
+                            {task.completed === 'Completed' ? '未完了に変更' : '完了に変更'}
                         </Button>
                     </CardActions>
                 </Card>

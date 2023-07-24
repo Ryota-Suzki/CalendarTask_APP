@@ -74,6 +74,20 @@ const App = () => {
     }
   };
 
+  const handleToggleComplete = async (taskId) => {
+    try {
+      setLoading(true); // タスク完了状態の変更処理開始時にローディング状態をtrueにする
+      const taskToToggle = tasks.find((task) => task.id === taskId);
+      const updatedTask = { ...taskToToggle, completed: taskToToggle.completed === 'Completed' ? 'Incomplete' : 'Completed' };
+      await axios.put(`http://localhost:8000/api/tasks/${taskId}/`, updatedTask);
+      fetchTasks();
+    } catch (error) {
+      console.error('Error toggling task completion:', error);
+    } finally {
+      setLoading(false); // タスク完了状態の変更処理完了時にローディング状態をfalseにする
+    }
+  };
+
   return (
     <Container maxWidth="lg">
       <Box my={4}>
@@ -93,10 +107,10 @@ const App = () => {
           </Grid>
           <Grid item xs={12} lg={6}>
             <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
-              {loading ? ( // ローディング状態に応じて表示するコンポーネントを切り替える
-                <CircularProgress /> // ローディング中は円形のプログレスバーを表示
+              {loading ? (
+                <CircularProgress />
               ) : (
-                <TaskList tasks={tasks} onDeleteTask={handleDeleteTask} />
+                <TaskList tasks={tasks} onDeleteTask={handleDeleteTask} onToggleComplete={handleToggleComplete} />
               )}
             </Box>
           </Grid>

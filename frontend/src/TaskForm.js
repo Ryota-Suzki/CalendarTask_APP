@@ -6,7 +6,8 @@ const TaskForm = ({ onTaskAdd }) => {
     const [description, setDescription] = useState('');
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
-    const [importance, setImportance] = useState('Low'); // 重要度の初期値を設定
+    const [importance, setImportance] = useState('Low');
+    const [completed, setCompleted] = useState('Incomplete'); // 新しいステートとしてcompletedを追加
 
     const handleTitleChange = (event) => {
         setTitle(event.target.value);
@@ -28,6 +29,10 @@ const TaskForm = ({ onTaskAdd }) => {
         setImportance(event.target.value);
     };
 
+    const handleCompletedChange = (event) => {
+        setCompleted(event.target.value);
+    };
+
     const handleSubmit = (event) => {
         event.preventDefault();
 
@@ -38,6 +43,7 @@ const TaskForm = ({ onTaskAdd }) => {
             start_date: startDate,
             end_date: endDate,
             importance: importance, // 重要度の値を追加
+            completed: completed, // 完了状態を追加
         };
 
         onTaskAdd(newTask);
@@ -48,6 +54,7 @@ const TaskForm = ({ onTaskAdd }) => {
         setStartDate('');
         setEndDate('');
         setImportance('Low'); // 重要度を初期値にリセット
+        setCompleted('Incomplete'); // 完了状態を初期値にリセット
     };
 
     return (
@@ -111,6 +118,15 @@ const TaskForm = ({ onTaskAdd }) => {
                                     <MenuItem value="Low">Low</MenuItem>
                                     <MenuItem value="Medium">Medium</MenuItem>
                                     <MenuItem value="High">High</MenuItem>
+                                </Select>
+                            </FormControl>
+                        </Grid>
+                        <Grid item xs={12}>
+                            <FormControl fullWidth required>
+                                <InputLabel>完了状態</InputLabel>
+                                <Select name="completed" value={completed} onChange={handleCompletedChange}>
+                                    <MenuItem value="Incomplete">未完了</MenuItem>
+                                    <MenuItem value="Completed">完了</MenuItem>
                                 </Select>
                             </FormControl>
                         </Grid>
