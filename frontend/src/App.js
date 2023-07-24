@@ -152,7 +152,8 @@ const App = () => {
                     onToggleComplete={handleToggleComplete}
                     onTaskClick={handleTaskClick}
                     setLoading={setLoading}
-                    setEvents={setEvents} />
+                    setEvents={setEvents}
+                    fetchTasks={fetchTasks} />
                 )}
                 {taskDetailsOpen && selectedTask && (
                   <TaskDetails
