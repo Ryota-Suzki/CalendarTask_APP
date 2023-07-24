@@ -4,7 +4,7 @@ import MyCalendar from './Calendar';
 import TaskForm from './TaskForm';
 import TaskList from './TaskList';
 import TaskDetails from './TaskDetails';
-import { Container, Typography, Box, Grid, CircularProgress, createTheme, Dialog, DialogTitle, DialogContent, DialogActions, Button } from '@mui/material';
+import { Container, Typography, Box, Grid, CircularProgress, createTheme, Dialog, DialogContent, DialogActions, Button } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
 
 const App = () => {
@@ -24,6 +24,35 @@ const App = () => {
       type: 'dark',
     },
   });
+
+  const fetchData = async () => {
+    try {
+      const response = await axios.get('http://localhost:8000/api/tasks/');
+      const eventsWithColor = response.data.map((event) => ({
+        ...event,
+        color: getEventColor(event.importance), // 重要度に応じた色を設定
+      }));
+      setEvents(eventsWithColor);
+      setTasks(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setLoading(false);
+    }
+  };
+
+  const getEventColor = (importance) => {
+    switch (importance) {
+      case 'Low':
+        return 'blue'; // 低い重要度の場合は青色
+      case 'Medium':
+        return 'orange'; // 中程度の重要度の場合はオレンジ色
+      case 'High':
+        return 'red'; // 高い重要度の場合は赤色
+      default:
+        return 'gray'; // それ以外の場合は灰色
+    }
+  };
 
   const fetchEvents = async () => {
     try {
@@ -65,8 +94,7 @@ const App = () => {
     try {
       setLoading(true);
       await axios.post('http://localhost:8000/api/tasks/', task);
-      await fetchTasks();
-      setEvents([...events, task]); // events ステートを更新
+      fetchTasks();
     } catch (error) {
       console.error('Error adding task:', error);
     } finally {
@@ -109,8 +137,7 @@ const App = () => {
     try {
       setLoading(true);
       await axios.put(`http://localhost:8000/api/tasks/${editedTask.id}/`, editedTask);
-      await fetchTasks();
-      setEvents(events.filter((task) => task.id !== editedTask.id).concat(editedTask));
+      fetchTasks();
     } catch (error) {
       console.error('Error saving task:', error);
     } finally {
@@ -151,27 +178,27 @@ const App = () => {
                     setTasks={setTasks}
                     onDeleteTask={handleDeleteTask}
                     onToggleComplete={handleToggleComplete}
-                    onTaskClick={handleTaskClick}
+                    onTaskClick={handleEventSelect} // カレンダーのタスクをクリックした際に編集画面を開く
                     setLoading={setLoading}
                     setEvents={setEvents}
                     fetchTasks={fetchTasks} />
-                )}
-                {taskDetailsOpen && selectedTask && (
-                  <Dialog open={taskDetailsOpen} onClose={() => setTaskDetailsOpen(false)}>
-                    <DialogContent>
-                      <TaskDetails
-                        task={selectedTask}
-                        onSave={handleTaskSave}
-                        onClose={() => setTaskDetailsOpen(false)}
-                        setLoading={setLoading}
-                      />
-                    </DialogContent>
-                  </Dialog>
                 )}
               </Box>
             </Grid>
           </Grid>
         </Box>
+        {taskDetailsOpen && selectedTask && (
+          <Dialog open={taskDetailsOpen} onClose={() => setTaskDetailsOpen(false)}>
+            <DialogContent>
+              <TaskDetails
+                task={selectedTask}
+                onSave={handleTaskSave}
+                onClose={() => setTaskDetailsOpen(false)}
+                setLoading={setLoading}
+              />
+            </DialogContent>
+          </Dialog>
+        )}
       </Container>
     </ThemeProvider>
   );
