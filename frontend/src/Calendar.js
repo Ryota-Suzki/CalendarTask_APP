@@ -7,6 +7,7 @@ const localizer = momentLocalizer(moment);
 
 const MyCalendar = ({ events, onEventSelect, onDateSelect }) => {
     const [calendarEvents, setCalendarEvents] = useState(events);
+    console.log(events)
 
     useEffect(() => {
         setCalendarEvents(events);
@@ -25,6 +26,23 @@ const MyCalendar = ({ events, onEventSelect, onDateSelect }) => {
         };
         onDateSelect(newTask); // 日付選択のハンドラを親コンポーネントに伝える
     };
+    const eventStyleGetter = (event, start, end, isSelected) => {
+        // 重要度に応じた色をイベントのスタイルに適用
+        const backgroundColor = event.color || 'gray'; // 重要度に応じた色が設定されていない場合は灰色をデフォルトとする
+
+        const style = {
+            backgroundColor,
+            borderRadius: '5px',
+            opacity: 0.8,
+            color: 'white',
+            border: '0px',
+            display: 'block',
+        };
+
+        return {
+            style,
+        };
+    };
 
     return (
         <div style={{ height: '500px' }}>
@@ -33,9 +51,10 @@ const MyCalendar = ({ events, onEventSelect, onDateSelect }) => {
                 events={events}
                 startAccessor={(event) => new Date(event.start_date)}
                 endAccessor={(event) => new Date(event.end_date)}
-                onSelectEvent={handleEventSelect} // タスクが選択されたときの処理
+                onSelectEvent={handleEventSelect}
                 onSelectSlot={handleDateSelect}
-                style={{ height: "100%" }}
+                eventPropGetter={eventStyleGetter} // イベントのスタイルをカスタマイズするプロパティを追加
+                style={{ height: '100%' }}
             />
         </div>
     );

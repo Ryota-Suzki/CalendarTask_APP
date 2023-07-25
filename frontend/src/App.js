@@ -54,10 +54,22 @@ const App = () => {
     }
   };
 
+  // const fetchEvents = async () => {
+  //   try {
+  //     const response = await axios.get('http://localhost:8000/api/tasks/');
+  //     setEvents(response.data);
+  //   } catch (error) {
+  //     console.error('Error fetching events:', error);
+  //   }
+  // };
   const fetchEvents = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/tasks/');
-      setEvents(response.data);
+      const eventsWithColor = response.data.map((event) => ({
+        ...event,
+        color: getEventColor(event.importance), // 重要度に応じた色を設定
+      }));
+      setEvents(eventsWithColor);
     } catch (error) {
       console.error('Error fetching events:', error);
     }
@@ -137,7 +149,8 @@ const App = () => {
     try {
       setLoading(true);
       await axios.put(`http://localhost:8000/api/tasks/${editedTask.id}/`, editedTask);
-      fetchTasks();
+      await fetchTasks(); // タスクを更新した後に再度タスクを取得
+      fetchEvents(); // カレンダーの表示を更新
     } catch (error) {
       console.error('Error saving task:', error);
     } finally {
@@ -157,8 +170,8 @@ const App = () => {
             <Grid item xs={12}>
               <Box p={2} border={1} borderRadius={5} bgcolor="#f9f9f9" boxShadow={2}>
                 <MyCalendar
-                  key={JSON.stringify(events)} // eventsが変更されたときにカレンダーを再描画する
-                  events={events}
+                  key={JSON.stringify(events)}
+                  events={events.map((event) => ({ ...event, color: getEventColor(event.importance) }))}
                   onEventSelect={handleEventSelect}
                   onDateSelect={handleDateSelect}
                 />
