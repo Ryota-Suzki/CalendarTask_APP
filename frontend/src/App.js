@@ -25,22 +25,6 @@ const App = () => {
     },
   });
 
-  const fetchData = async () => {
-    try {
-      const response = await axios.get('http://localhost:8000/api/tasks/');
-      const eventsWithColor = response.data.map((event) => ({
-        ...event,
-        color: getEventColor(event.importance), // 重要度に応じた色を設定
-      }));
-      setEvents(eventsWithColor);
-      setTasks(response.data);
-      setLoading(false);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-      setLoading(false);
-    }
-  };
-
   const getEventColor = (importance) => {
     switch (importance) {
       case 'Low':
@@ -54,14 +38,6 @@ const App = () => {
     }
   };
 
-  // const fetchEvents = async () => {
-  //   try {
-  //     const response = await axios.get('http://localhost:8000/api/tasks/');
-  //     setEvents(response.data);
-  //   } catch (error) {
-  //     console.error('Error fetching events:', error);
-  //   }
-  // };
   const fetchEvents = async () => {
     try {
       const response = await axios.get('http://localhost:8000/api/tasks/');
@@ -107,6 +83,7 @@ const App = () => {
       setLoading(true);
       await axios.post('http://localhost:8000/api/tasks/', task);
       fetchTasks();
+      fetchEvents(); // カレンダーの表示を更新
     } catch (error) {
       console.error('Error adding task:', error);
     } finally {
@@ -119,6 +96,7 @@ const App = () => {
       setLoading(true);
       await axios.delete(`http://localhost:8000/api/tasks/${taskId}/`);
       fetchTasks();
+      fetchEvents(); // カレンダーの表示を更新
     } catch (error) {
       console.error('Error deleting task:', error);
     } finally {
@@ -132,7 +110,16 @@ const App = () => {
       const taskToToggle = tasks.find((task) => task.id === taskId);
       const updatedTask = { ...taskToToggle, completed: taskToToggle.completed === 'Completed' ? 'Incomplete' : 'Completed' };
       await axios.put(`http://localhost:8000/api/tasks/${taskId}/`, updatedTask);
+      // カレンダーに変更を反映させるため、events配列を新しい情報に更新する
+      const updatedEvents = events.map((event) => {
+        if (event.id === taskId) {
+          return { ...event, completed: updatedTask.completed };
+        }
+        return event;
+      });
+      setEvents(updatedEvents);
       fetchTasks();
+      fetchEvents(); // カレンダーの表示を更新
     } catch (error) {
       console.error('Error toggling task completion:', error);
     } finally {
@@ -194,7 +181,8 @@ const App = () => {
                     onTaskClick={handleEventSelect} // カレンダーのタスクをクリックした際に編集画面を開く
                     setLoading={setLoading}
                     setEvents={setEvents}
-                    fetchTasks={fetchTasks} />
+                    fetchTasks={fetchTasks}
+                    fetchEvents={fetchEvents} />
                 )}
               </Box>
             </Grid>

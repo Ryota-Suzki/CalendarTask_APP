@@ -30,6 +30,9 @@ const MyCalendar = ({ events, onEventSelect, onDateSelect }) => {
         // 重要度に応じた色をイベントのスタイルに適用
         const backgroundColor = event.color || 'gray'; // 重要度に応じた色が設定されていない場合は灰色をデフォルトとする
 
+        // タスクが完了している場合はタイトルに斜線を追加
+        const textDecoration = event.completed === 'Completed' ? 'line-through' : 'none';
+
         const style = {
             backgroundColor,
             borderRadius: '5px',
@@ -37,6 +40,7 @@ const MyCalendar = ({ events, onEventSelect, onDateSelect }) => {
             color: 'white',
             border: '0px',
             display: 'block',
+            textDecoration
         };
 
         return {

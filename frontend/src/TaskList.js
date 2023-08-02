@@ -3,7 +3,7 @@ import { Card, CardContent, CardActions, Button, Typography, Box, Modal, ToggleB
 import axios from 'axios';
 import TaskDetails from './TaskDetails';
 
-const TaskList = ({ tasks, setTasks, onDeleteTask, onToggleComplete, onTaskClick, setLoading, setEvents, fetchTasks }) => {
+const TaskList = ({ tasks, setTasks, onDeleteTask, setLoading, setEvents, fetchTasks, fetchEvents }) => {
     const [isModalOpen, setIsModalOpen] = React.useState(false);
     const [selectedTask, setSelectedTask] = React.useState(null);
     const [sortOption, setSortOption] = useState(() => {
@@ -12,17 +12,7 @@ const TaskList = ({ tasks, setTasks, onDeleteTask, onToggleComplete, onTaskClick
     });
     const [sortOrder, setSortOrder] = useState('asc');
 
-    // タスクリストをフェッチする関数
-    const fetchTaskList = async () => {
-        try {
-            const response = await axios.get('http://localhost:8000/api/tasks/');
-            setTasks(response.data);
-            setEvents(response.data);
-        } catch (error) {
-            console.error('Error fetching tasks:', error);
-        }
-    };
-
+    console.log(tasks)
     const handleSortChange = (event) => {
         setSortOption(event.target.value);
     };
@@ -97,6 +87,7 @@ const TaskList = ({ tasks, setTasks, onDeleteTask, onToggleComplete, onTaskClick
             const updatedTask = { ...taskToToggle, completed: taskToToggle.completed === 'Completed' ? 'Incomplete' : 'Completed' };
             await axios.put(`http://localhost:8000/api/tasks/${taskId}/`, updatedTask);
             fetchTasks();
+            fetchEvents();
         } catch (error) {
             console.error('Error toggling task completion:', error);
         } finally {
